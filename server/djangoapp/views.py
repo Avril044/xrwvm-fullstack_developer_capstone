@@ -12,17 +12,16 @@ import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
 from.models import CarMake, CarModel
+from.restapis import get_request, analyze_review_sentiments, post_review
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def login_user(request):
-    # Handles json request
     data = json.loads(request.body)
     username = data['userName']
     password = data['password']
-    # Check auth
     user = authenticate(username=username, password=password)
     response_data = {"userName": username}
     if user is not None:
@@ -80,7 +79,6 @@ def initiate():
     car_make_instances = []
     for data in car_make_data:
         car_make_instances.append(CarMake.objects.create(name=data['name'], description=data['description']))
-
     car_model_data = [
         {"name": "Pathfinder", "type": "SUV", "year": 2021, "car_make": car_make_instances[0]},
         {"name": "Qashqai", "type": "SUV", "year": 2021, "car_make": car_make_instances[0]},
@@ -101,30 +99,42 @@ def initiate():
     for data in car_model_data:
         CarModel.objects.create(name=data['name'], car_make=data['car_make'], type=data['type'], year=data['year'])
 
-# Update dealer details
+#Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
 def get_dealerships(request, state="All"):
-    if state == "All":
+    if(state == "All"):
         endpoint = "/fetchDealers"
     else:
         endpoint = "/fetchDealers/"+state
-    # call Watson Assistant API here - will be added in next lab
-    return JsonResponse({"status": "OK"})
+    dealerships = get_request(endpoint)
+    return JsonResponse({"status":200,"dealers":dealerships})
 
 def get_dealer_details(request, dealer_id):
-    # call Watson Assistant API here
-    return JsonResponse({"status": "OK"})
+    if(dealer_id):
+        endpoint = "/fetchDealer/"+str(dealer_id)
+        dealership = get_request(endpoint)
+        return JsonResponse({"status":200,"dealer":dealership})
+    else:
+        return JsonResponse({"status":400,"message":"Bad Request"})
 
 def get_dealer_reviews(request, dealer_id):
-    # call Watson Assistant API here
-    return JsonResponse({"status": "OK"})
+    if(dealer_id):
+        endpoint = "/fetchReviews/dealer/"+str(dealer_id)
+        reviews = get_request(endpoint)
+        for review_detail in reviews:
+            response = analyze_review_sentiments(review_detail['review'])
+            print(response)
+            review_detail['sentiment'] = response['sentiment']
+        return JsonResponse({"status":200,"reviews":reviews})
+    else:
+        return JsonResponse({"status":400,"message":"Bad Request"})
 
 def add_review(request):
-    if request.user.is_anonymous == False:
+    if(request.user.is_anonymous == False):
         data = json.loads(request.body)
         try:
-            # call Watson Assistant API here
-            return JsonResponse({"status": "OK"})
+            response = post_review(data)
+            return JsonResponse({"status":200})
         except:
-            return JsonResponse({"status": "Error"})
+            return JsonResponse({"status":401,"message":"Error in posting review"})
     else:
-        return JsonResponse({"status": "Unauthorized"})
+        return JsonResponse({"status":403,"message":"Unauthorized"})
