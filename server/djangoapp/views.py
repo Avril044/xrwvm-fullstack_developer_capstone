@@ -1,16 +1,15 @@
 
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 import logging
 import json
-from datetime import datetime
 from .models import CarMake, CarModel
 from .restapis import get_request, analyze_review_sentiments, post_review
 from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
+
 
 @csrf_exempt
 def login_user(request):
@@ -26,9 +25,11 @@ def login_user(request):
         response["status"] = "Failed"
     return JsonResponse(response)
 
+
 def logout_request(request):
     logout(request)
     return JsonResponse({"userName": ""})
+
 
 @csrf_exempt
 def registration(request):
@@ -39,10 +40,17 @@ def registration(request):
     last_name = data['lastName']
     email = data['email']
     if User.objects.filter(username=username).exists():
-        return JsonResponse({"userName": username, "error": "Already Registered"})
-    user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, password=password, email=email)
+        return JsonResponse(
+            {"userName": username, "error": "Already Registered"})
+    user = User.objects.create_user(
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        password=password,
+        email=email)
     login(request, user)
     return JsonResponse({"userName": username, "status": "Authenticated"})
+
 
 def get_cars(request):
     count = CarMake.objects.count()
@@ -55,6 +63,7 @@ def get_cars(request):
             cars.append({"CarModel": car_model.name, "CarMake": car_make.name})
     return JsonResponse({"CarModels": cars})
 
+
 def initiate():
     car_make_data = [
         {"name": "NISSAN", "description": "Great cars. Japanese technology"},
@@ -65,7 +74,10 @@ def initiate():
     ]
     car_make_instances = []
     for data in car_make_data:
-        car_make_instances.append(CarMake.objects.create(name=data['name'], description=data['description']))
+        car_make_instances.append(
+            CarMake.objects.create(
+                name=data['name'],
+                description=data['description']))
     car_model_data = [
         {"name": "Pathfinder", "type": "SUV", "year": 2021, "car_make": car_make_instances[0]},
         {"name": "Qashqai", "type": "SUV", "year": 2021, "car_make": car_make_instances[0]},
@@ -84,20 +96,27 @@ def initiate():
         {"name": "Kluger", "type": "SUV", "year": 2021, "car_make": car_make_instances[4]},
     ]
     for data in car_model_data:
-        CarModel.objects.create(name=data['name'], car_make=data['car_make'], type=data['type'], year=data['year'])
+        CarModel.objects.create(
+            name=data['name'],
+            car_make=data['car_make'],
+            type=data['type'],
+            year=data['year'])
+
 
 def get_dealerships(request, state="All"):
     if state == "All":
         endpoint = "/fetchDealers"
     else:
-        endpoint = "/fetchDealers/"+state
+        endpoint = "/fetchDealers/" + state
     dealerships = get_request(endpoint)
     return JsonResponse({"status": 200, "dealers": dealerships})
+
 
 def get_dealer_details(request, dealer_id):
     endpoint = f"/fetchDealer/{dealer_id}"
     dealership = get_request(endpoint)
     return JsonResponse({"status": 200, "dealer": dealership})
+
 
 def get_dealer_reviews(request, dealer_id):
     endpoint = f"/fetchReviews/dealer/{dealer_id}"
@@ -109,6 +128,7 @@ def get_dealer_reviews(request, dealer_id):
         except Exception:
             review_detail['sentiment'] = "neutral"
     return JsonResponse({"status": 200, "reviews": reviews})
+
 
 @csrf_exempt
 def add_review(request):
