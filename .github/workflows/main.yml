@@ -13,24 +13,17 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.12
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flake8
-
-    - name: Print working directory
-      run: pwd
-
     - name: Run Linter
       run: |
-        pwd
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.git,__pycache__,migrations,venv,env,node_modules
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.git,__pycache__,migrations,venv,env,node_modules || true
         flake8 . --count --max-line-length=120 --statistics --exclude=.git,__pycache__,migrations,venv,env,node_modules
         echo "Linted all the python files successfully"
 
@@ -40,16 +33,13 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 20
-
     - name: Install JSHint
       run: npm install jshint --global
-
     - name: Run Linter
       run: |
-        find ./server/database -name "*.js" -exec jshint {} +
+        find ./server/database -path ./server/database/node_modules -prune -o -type f -name "*.js" -exec jshint {} +
         echo "Linted all the js files successfully"
