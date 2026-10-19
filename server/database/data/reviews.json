@@ -549,6 +549,16 @@
       "car_make": "Cadillac",
       "car_model": "DeVille",
       "car_year": 1995
+    },
+    {
+      "name": "Avril",
+      "dealership": "10",
+      "review": "Excelente recomendacion ",
+      "purchase": true,
+      "purchase_date": "2026-10-19",
+      "car_make": "NISSAN",
+      "car_model": "Pathfinder",
+      "car_year": "2023"
     }
   ]
 }
