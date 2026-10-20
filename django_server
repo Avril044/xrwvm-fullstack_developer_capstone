@@ -1,2 +1,6 @@
+System check identified no issues (0 silenced).
+October 20, 2026 - 16:46:00
+Django version 4.2, using settings 'djangoproj.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
 Watching for file changes with StatReloader
-[20/Oct/2026 20:46:12] "GET /djangoapp/get_cars HTTP/1.1" 200 681
