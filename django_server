@@ -1,1 +1,2 @@
 Watching for file changes with StatReloader
+[20/Oct/2026 20:46:12] "GET /djangoapp/get_cars HTTP/1.1" 200 681
